@@ -1,1 +1,13 @@
-**Hola mundo**
+Downtify - version 0.1
+
+Downtify would be an mac app for getting the spotify songs from youtube. It's easy and works very well. :)
+
+
+REQUERIMENTS:
+
+No requeriments to use when we do the first pakage
+
+To developping
+
+- python 2.6
+- Tkinter

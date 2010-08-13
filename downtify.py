@@ -22,8 +22,11 @@ class SpiderParser(HTMLParser):
         if tag == 'h1' and attrs:
             for attribute in attrs:
                 if (attribute[0] == 'title'): #&& (attribute[0] == 'title')
-                    print "Parsed the song info => %s" % attribute[1]
                     self.readedInfo = attribute[1]
+        if tag == 'a' and attrs:
+            for attribute in attrs:
+                if (attribute[0] == 'title'): #&& (attribute[0] == 'title')
+                    self.readedInfo += " - " + attribute[1]
     def getParsedInfo(self):
         print "sending the info from the parser "+ self.readedInfo
         return self.readedInfo
@@ -88,11 +91,15 @@ class App:
                 filename = self.getSpotifyUrl(url, i)
                 # parsing the html
                 songInfo = self.parseHtmlArchive(filename)
+                # youtube query json
+                youtubeFilename = self.getYoutubeResults(songInfo, i)
                 i = i + 1
                 #songInfo = #TODO: parse the archive to get the info
                 self.songs += [ songInfo ]
                 self.list2.insert(END, songInfo)
-                #print line
+                #wait 3 secconds
+                print "Wait for 3 secconds..."
+                time.sleep(3)
                 
     def getSpotifyUrl(self, url, i):
         #webbrowser.open(picture_page)  # test
@@ -117,6 +124,41 @@ class App:
         # was it saved correctly?
         # test it out ...
         # webbrowser.open(filename)
+        
+    def getYoutubeResults(self, query , i):
+        #webbrowser.open(picture_page)  # test
+        # open the web page picture and read it into a variable
+        youtubeGdataurl = "http://gdata.youtube.com/feeds/api/videos?max-results=5&alt=json&q="
+        youtubeQuery = self.parseYoutubeQuery(query)
+        url = youtubeGdataurl + youtubeQuery
+        print "Trying to open : "+ url
+        opener1 = urllib2.build_opener()
+        page1 = opener1.open(url)
+        my_html = page1.read()
+
+        # open file for binary write and save picture
+        # picture_page[-4:] extracts extension eg. .gif
+        # (most image file extensions have three letters, otherwise modify)
+        filename = "eraseme-youtube-"+str(i)+".json"
+        print filename  # test
+        fout = open(filename, "wb")
+        fout.write(my_html)
+        fout.close()
+
+        return filename
+
+        # was it saved correctly?
+        # test it out ...
+        # webbrowser.open(filename)
+        
+    def parseYoutubeQuery(self, query):
+        queryPartition = query.split(' ')
+        youtubeQuery = ""
+        for part in queryPartition :
+            youtubeQuery += part
+            youtubeQuery += "%20"
+        return youtubeQuery
+            
 
     def parseHtmlArchive (self, filename):
         archiveparser = SpiderParser(filename)
@@ -141,4 +183,4 @@ app = App(root)
 root.mainloop()
 
 
-
+# http://gdata.youtube.com/feeds/api/videos?max-results=5&alt=json&q=search%20query%20here
