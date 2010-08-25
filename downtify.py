@@ -1,5 +1,6 @@
 
 import sys
+sys.path.append('/Users/andresbravogorgonio/Documents/Proyectos/Downtify/SRC/downtify/')
 from Tkinter import *
 import urllib2, urllib
 import webbrowser
@@ -7,6 +8,9 @@ import os
 import time
 import string
 from HTMLParser import HTMLParser
+import gdata.youtube.service
+import macOSclipboard
+
 
 
 class SpiderParser(HTMLParser):
@@ -47,22 +51,24 @@ class App:
         
         scrollbar = Scrollbar(master, orient=VERTICAL)
         self.list = Listbox(frame, yscrollcommand=scrollbar.set)
-        self.configuration()
+        
         scrollbar.config(command=self.yview)
         scrollbar.pack(side=RIGHT, fill=Y)
         self.list.pack(side=LEFT, fill=BOTH, expand=1)
         
         scrollbar2 = Scrollbar(master, orient=VERTICAL)
         self.list2 = Listbox(frame, yscrollcommand=scrollbar.set)
-        self.configuration()
+        
         scrollbar2.config(command=self.yview)
         scrollbar2.pack(side=RIGHT, fill=Y)
         self.list2.pack(side=LEFT, fill=BOTH, expand=1)
         
         self.button_get_info = Button(frame, text="GET SONGS", fg="red", command=self.getSongsInfo)
         self.button_get_info.pack(side=RIGHT)
+        self.button_get_info = Button(frame, text="ISPECT THE CLIPBOARD", fg="red", command=self.getSpotifyLinks)
+        self.button_get_info.pack(side=RIGHT)
         
-        self.configuration()
+        #self.configuration()
         
     
     def configuration(self):
@@ -77,6 +83,19 @@ class App:
             self.list.insert(END, line)
             print line
         f.close()
+        
+    def getSpotifyLinks(self):
+        #Parsing urls from archive
+        f = macOSclipboard.paste()
+        if f.find('http://open.spotify.com') != -1 :
+            self.urls = []
+            for line in f.split('\n'):
+                if line.find('http://open.spotify.com') == 0 :
+                    self.urls += [ line ]
+                    self.list.insert(END, line)
+                    print line
+        else :
+            print "No spotify urls in clipboard"
     
     def getSongsInfo(self):
         #Reader read configuration file
@@ -92,7 +111,7 @@ class App:
                 # parsing the html
                 songInfo = self.parseHtmlArchive(filename)
                 # youtube query json
-                youtubeFilename = self.getYoutubeResults(songInfo, i)
+                self.SearchAndPrint(songInfo)
                 i = i + 1
                 #songInfo = #TODO: parse the archive to get the info
                 self.songs += [ songInfo ]
@@ -174,6 +193,48 @@ class App:
             return False
         else:
             return True
+            
+    #YOUTUBE DEFS
+    
+    def PrintEntryDetails(self, entry):
+      #print 'Video title: %s' % entry.media.title.text
+      #print 'Video published on: %s ' % entry.published.text
+      #print 'Video description: %s' % entry.media.description.text
+      #print 'Video category: %s' % entry.media.category[0].text
+      #print 'Video tags: %s' % entry.media.keywords.text
+      print "Coping to clipboard the video url :"+entry.media.player.url
+      macOSclipboard.copy(entry.media.player.url); 
+      #print 'Video flash player URL: %s' % entry.GetSwfUrl()
+      #print 'Video duration: %s' % entry.media.duration.seconds
+
+      # non entry.media attributes
+      #print 'Video geo location: %s' % entry.geo.location()
+      #print 'Video view count: %s' % entry.statistics.view_count
+      #print 'Video rating: %s' % entry.rating.average
+
+      # show alternate formats
+      # for alternate_format in entry.media.content:
+      #         if 'isDefault' not in alternate_format.extension_attributes:
+      #           print 'Alternate format: %s | url: %s ' % (alternate_format.type,
+      #                                                      alternate_format.url)
+
+      # show thumbnails
+      # for thumbnail in entry.media.thumbnail:
+      #         print 'Thumbnail url: %s' % thumbnail.url
+        
+    def PrintVideoFeed(self, feed):
+      for entry in feed.entry:
+        self.PrintEntryDetails(entry)
+        return 1
+        
+    def SearchAndPrint(self, search_terms):
+      yt_service = gdata.youtube.service.YouTubeService()
+      query = gdata.youtube.service.YouTubeVideoQuery()
+      query.vq = search_terms
+      query.orderby = 'viewCount'
+      query.racy = 'include'
+      feed = yt_service.YouTubeQuery(query)
+      self.PrintVideoFeed(feed)
 
 
 root = Tk()
