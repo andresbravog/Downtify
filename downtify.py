@@ -1,3 +1,10 @@
+# HOW TO SET INTERVALS
+# def hello():
+#     print "hello, world"
+# 
+# t = Timer(30.0, hello)
+# t.start() # after 30 seconds, "hello, world" will be printed
+
 
 import sys
 sys.path.append('/Users/andresbravogorgonio/Documents/Proyectos/Downtify/SRC/downtify/')
@@ -10,6 +17,10 @@ import string
 from HTMLParser import HTMLParser
 import gdata.youtube.service
 import macOSclipboard
+import growlNotify
+
+from threading import Timer
+
 
 
 
@@ -69,7 +80,8 @@ class App:
         self.button_get_info.pack(side=RIGHT)
         
         #self.configuration()
-        
+        #Start the ClipBoard inspect with the 
+        self.getSpotifyLinks()
     
     def configuration(self):
         #Reader read configuration file
@@ -88,14 +100,22 @@ class App:
         #Parsing urls from archive
         f = macOSclipboard.paste()
         if f.find('http://open.spotify.com') != -1 :
+            growlNotify.gNotify('Tratando los enlaces del portapapeles','Downtify')
             self.urls = []
             for line in f.split('\n'):
                 if line.find('http://open.spotify.com') == 0 :
                     self.urls += [ line ]
                     self.list.insert(END, line)
                     print line
+            #TODO: we have to manage better the cliboard when we finish to parse
+            macOSclipboard.copy('')
+            #Automatizate the process
+            self.getSongsInfo()
+            
         else :
             print "No spotify urls in clipboard"
+        t = Timer(1.0, self.getSpotifyLinks)
+        t.start()
     
     def getSongsInfo(self):
         #Reader read configuration file
@@ -183,6 +203,7 @@ class App:
         archiveparser = SpiderParser(filename)
         parsedInfo = archiveparser.getParsedInfo()
         print "gettin the info from the parser"+ parsedInfo
+        growlNotify.gNotify('Getting song: '+ parsedInfo ,'Downtify' )
         return parsedInfo
     
     def yview(self, *args):
@@ -190,6 +211,7 @@ class App:
     
     def test_connection(self):
         if os.system("ping -c 2 www.google.com"):
+            growlNotify.gNotify('No tienes conexion a internet ;(')
             return False
         else:
             return True
