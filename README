@@ -1,0 +1,28 @@
+<<<<<<< HEAD
+=======
+Downtify - version 0.1
+
+Downtify would be an mac app for getting the spotify songs from youtube. It's easy and works very well. :)
+
+Downtify is the missing link betwen spotify and jdownloader. Let's select multiple songs from your spotify lists, copy (cmd + c), and see downtify getting this songs from youtube and put it into the clipboard to let jdownloader to get the mp3 file.
+
+In fact, what downtify do is getting the song info, search it in youtube and get the most indicated video for it, then it thows teh link into the clipboard to let jdownloader do what ever it does...
+;)
+
+
+REQUERIMENTS:
+
+To Use:
+
+- Jdownloader with paperClip inpector activated (download manager)
+- No pyhton requeriments to use when we have done the first pakage
+
+
+To developping
+
+- python 2.6
+- Tkinter
+- Growl (optional)
+- gNotify python module (provided in growl SDK package)
+- Gdata for python (Google Data python module)
+>>>>>>> 79557e0ff509315f3a436d4377dd90a65d1cdc97
